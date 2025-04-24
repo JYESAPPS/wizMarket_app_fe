@@ -31,7 +31,7 @@ const AdsSwiper = ({ imageTemplateList, content, title, useOption, checkImages, 
         const templateModules = [];
         for (let i = 1; i <= 10; i++) {
           try {
-            const module = await import(`../../../pages/Ads/template/${folderTitle}/${folderUseOption}/Template${i}.jsx`);
+            const module = await import(`../../../../pages/Ads/template/${folderTitle}/${folderUseOption}/Template${i}.jsx`);
             templateModules.push({ id: i, Component: module.default });
           } catch (error) {
             if (error.message.includes("Cannot find module")) {
@@ -66,7 +66,7 @@ const AdsSwiper = ({ imageTemplateList, content, title, useOption, checkImages, 
           <div className="flex justify-center items-center relative pt-4 pb-4">
             <img src={imageTemplateList[0]} alt="원본" className="max-w-full object-cover" />
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex justify-center items-center cursor-pointer w-16 h-16" onClick={() => handleImageClick(0)}>
-              <img src={checkImages.includes(0) ? require("../../../assets/icon/check_icon.png") : require("../../../assets/icon/non_check_icon.png")} alt={checkImages.includes(0) ? "Checked" : "Non-checked"} className="w-full h-full" />
+              <img src={checkImages.includes(0) ? require("../../../../assets/icon/check_icon.png") : require("../../../../assets/icon/non_check_icon.png")} alt={checkImages.includes(0) ? "Checked" : "Non-checked"} className="w-full h-full" />
             </div>
           </div>
         </SwiperSlide>
@@ -77,7 +77,7 @@ const AdsSwiper = ({ imageTemplateList, content, title, useOption, checkImages, 
             <div className="flex justify-center items-center relative pt-4 pb-4">
             <Component imageUrl={imageTemplateList[0]} text={content} storeName={storeName} roadName={roadName} weather={weather} tag={tag} weekday={weekday} isCaptured={isCaptured}/>
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex justify-center items-center cursor-pointer w-16 h-16" onClick={() => handleImageClick(id)}>
-                <img src={checkImages.includes(id) ? require("../../../assets/icon/check_icon.png") : require("../../../assets/icon/non_check_icon.png")} alt={checkImages.includes(id) ? "Checked" : "Non-checked"} className="w-full h-full" />
+                <img src={checkImages.includes(id) ? require("../../../../assets/icon/check_icon.png") : require("../../../../assets/icon/non_check_icon.png")} alt={checkImages.includes(id) ? "Checked" : "Non-checked"} className="w-full h-full" />
               </div>
             </div>
           </SwiperSlide>

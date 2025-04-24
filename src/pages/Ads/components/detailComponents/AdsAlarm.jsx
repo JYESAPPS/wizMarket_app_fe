@@ -55,7 +55,7 @@ const AdsAlarm = () => {
             {/* 알람 버튼 */}
             <button onClick={() => setOpen(!open)}>
                 <img
-                    src={require("../../../assets/icon/alarm.png")}
+                    src={require("../../../../assets/icon/alarm.png")}
                     alt="알림 아이콘"
                 />
                 {/* 🔴 빨간불 */}

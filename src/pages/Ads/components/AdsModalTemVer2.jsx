@@ -6,12 +6,12 @@ import "swiper/css";
 import "swiper/css/pagination"; // pagination 스타일 추가
 import "./../../../styles/swiper.css";
 
-import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
-import AdsAlarm from './AdsAlarm';
+import AdsAIInstructionByTitle from './detailComponents/AdsAIInstructionByTitle';
+import AdsAlarm from './detailComponents/AdsAlarm';
 import "./../../../styles/drag.css";
-import AdsSwiper from './AdsSwiper';
+import AdsSwiper from './detailComponents/AdsSwiper';
 import "../../../styles/templateFont.css"
-import AdsSeedPrompt from './AdsSeedPrompt';
+import AdsSeedPrompt from './detailComponents/AdsSeedPrompt';
 import { toCanvas } from "html-to-image";
 
 
@@ -54,6 +54,23 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [imageTemplateList, setImageTemplateList] = useState([]);
     const [isCaptured, setIsCaptured] = useState(false); // ✅ 캡처 여부 상태
 
+    const [chanNum, setChanNum] = useState(0);
+    const channelMap = {
+        1: "문자메시지",
+        2: "인스타그램 스토리",
+        3: "인스타그램 피드",
+        4: "네이버 블로그",
+        5: "카카오톡",
+        6: "네이버 밴드"
+    };
+
+    // 숫자만 뽑기 (예: "1. 문자메시지" → 1)
+    const extractNumber = (input) => {
+        const match = String(input).match(/\d+/);
+        return match ? parseInt(match[0]) : 0;
+    };
+
+    const selectedChannel = channelMap[extractNumber(chanNum)] || "채널 없음";
 
     // 디자인 스타일 선택 값
     const [designStyle, setDesignStyle] = useState('포토실사');
@@ -319,6 +336,37 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
         fetchInitialData();
     }, [isOpen, storeBusinessNumber]);
 
+    const generateAdsChanTest = async () => {
+
+
+        const updatedTitle = title === "" ? "매장 소개" : title;
+        const basicInfo = {
+            male_base: maleMap[data.maxSalesMale] || data.maxSalesMale || "값 없음",
+            female_base: femaleMap[data.maxSalesFemale] || data.maxSalesFemale || "값 없음",
+            store_name: data.store_name,
+            road_name: data.road_name,
+            tag: data.detail_category_name,
+            title: updatedTitle,
+        };
+        try {
+            const response = await axios.post(
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/suggest/channel/test`,
+                basicInfo,
+                { headers: { 'Content-Type': 'application/json' } }
+            );
+            console.log(response.data.chan)
+            setChanNum(response.data.chan); // 성공 시 서버에서 받은 데이터를 상태에 저장
+
+        } catch (err) {
+            console.error('저장 중 오류 발생:', err);
+        } finally {
+
+        }
+    };
+
+
+
+
 
     // 이미지 선택 되게끔
     const handleImageClick = (index) => {
@@ -364,6 +412,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             tag: data.detail_category_name,
             title: updatedTitle,
         };
+        console.log(basicInfo)
         try {
             const response = await axios.post(
                 `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/suggest/channel`,
@@ -645,35 +694,35 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     const onDownload = async () => {
         const index = checkImages[0];
-    
+
         let useOptionPath = "";
         let titlePath = "";
-    
+
         if (title === "매장 소개") {
             titlePath = "intro";
         } else if (title === "이벤트") {
             titlePath = "event";
         }
-    
+
         if (useOption === "인스타그램 스토리" || useOption === "카카오톡" || useOption === "문자메시지" || useOption === "") {
             useOptionPath = "4to7";
         } else if (useOption === "인스타그램 피드") {
             useOptionPath = "1to1";
         }
-    
+
         const templateElement = document.getElementById(`template_${titlePath}_${useOptionPath}_${index}`);
-    
+
         if (templateElement) {
             setIsCaptured(true);
-    
+
             setTimeout(async () => {
                 try {
                     const canvas = await toCanvas(templateElement, {
                         cacheBust: true,
                     });
-    
+
                     const imageData = canvas.toDataURL("image/png", 1.0);
-    
+
                     // ✅ 이미지 다운로드 처리
                     const link = document.createElement("a");
                     link.href = imageData;
@@ -681,7 +730,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-    
+
                     setIsCaptured(false);
                 } catch (error) {
                     console.error("Error downloading image:", error);
@@ -690,7 +739,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             }, 300);
         }
     };
-    
+
 
 
     // Base64 데이터를 Blob으로 변환하는 유틸리티 함수
@@ -889,8 +938,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         { label: "매장홍보", value: "매장 소개" },
                                         { label: "이벤트", value: "이벤트" },
                                         { label: "상품소개", value: "상품소개" },
-                                        { label: "감사인사", value: "인사" },
-                                        { label: "명함", value: "명함" },
+                                        { label: "감사인사", value: "인사" }
                                     ].map((option, index, array) => (
                                         <div key={option.value} className="flex items-center flex-1">
                                             <button
@@ -913,6 +961,12 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </div>
 
                             {/* 광고 채널 추천 받기 */}
+                            <button
+                                onClick={generateAdsChanTest}
+                                className={`flex items-center justify-center p-4 h-10 rounded-lg bg-[#FF1664] text-white font-bold text-sm transition`}>
+                                추천
+                            </button>
+                            <p>선택된 채널: {selectedChannel}</p>
                             <div className="flex-col justify-center">
                                 {adsChanLoading ? (
                                     // 로딩 상태
@@ -1301,7 +1355,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 <button
                                     className="flex justify-center items-center rounded-[4px] 
                                             bg-[#4CAF50] hover:bg-[#388E3C] text-white text-[16px] transition-all w-full"
-                                onClick={onDownload}
+                                    onClick={onDownload}
                                 >
                                     다운로드
                                 </button>
